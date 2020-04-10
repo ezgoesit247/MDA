@@ -1,0 +1,37 @@
+USE [aifmda]
+GO
+
+/****** Object:  Table [dbo].[Reel]    Script Date: 8/3/2018 10:52:53 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Reel](
+	[ReelNdx] [int] IDENTITY(78944,1) NOT NULL,
+	[ReelIdentifier] [nvarchar](50) NOT NULL,
+	[WorkOrderNdx] [int] NOT NULL,
+	[WorkOrderIdentifier] [nvarchar](50) NULL,
+	[Type] [nvarchar](20) NOT NULL,
+ CONSTRAINT [PK_Reel] PRIMARY KEY CLUSTERED 
+(
+	[ReelNdx] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [UK_4clb2mm91k6v62k51q2q3etet] UNIQUE NONCLUSTERED 
+(
+	[ReelIdentifier] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Reel] ADD  CONSTRAINT [DF_Reel_ReelType]  DEFAULT (N'EXTRUDER') FOR [Type]
+GO
+
+ALTER TABLE [dbo].[Reel]  WITH CHECK ADD  CONSTRAINT [FK2ieqtwq602mtgmq8e3vmr5hpe] FOREIGN KEY([WorkOrderNdx])
+REFERENCES [dbo].[WorkOrder] ([WorkOrderNdx])
+GO
+
+ALTER TABLE [dbo].[Reel] CHECK CONSTRAINT [FK2ieqtwq602mtgmq8e3vmr5hpe]
+GO
+
