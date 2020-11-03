@@ -1,4 +1,4 @@
 @echo off
-call mvn clean package
+mvn clean package -pl mdaservice -am
 
 pause

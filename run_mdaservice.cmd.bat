@@ -2,6 +2,6 @@
 title MDA Service
 
 
-java -jar mdaservice\target\mdaservice-1.1.0-SNAPSHOT.jar
-
-
+java -jar \
+   -Dspring.profiles.active=QA1 \
+   mdaservice\target\mdaservice-{$VERSION}.jar

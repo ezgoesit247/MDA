@@ -7,6 +7,6 @@ rem No dependency on the mdaservice
 
 set /p REEL_IDENTIFIER="Enter the Reel Identifier: "
 
-java -jar mdaclient\target\mdaclient-1.0.0-SNAPSHOT.jar %REEL_IDENTIFIER%
+java -jar mdaclient\target\mdaclient-{VERSION}.jar %REEL_IDENTIFIER%
 
 pause
