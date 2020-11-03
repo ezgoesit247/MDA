@@ -97,9 +97,11 @@
 				</configuration>
 			</plugin>
 
+      <!-- DON'T NEED TO COPY DEPS ANYMORE -->
+      <!--
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.1.0</version><!--$NO-MVN-MAN-VER$-->
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>copy-domain</id>
@@ -116,7 +118,6 @@
 									<excludes>
 										<exclude>capgemini/aif/machinedataanalytics/**.java</exclude>
 									</excludes>
-									<!--<filtering>true</filtering>-->
 								</resource>
 							</resources>
 						</configuration>
@@ -137,14 +138,26 @@
 										<exclude>application.*</exclude>
 										<exclude>*.xml</exclude>
 									</excludes>
-									<!--<filtering>true</filtering>-->
 								</resource>
 							</resources>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-
+			-->
+      <!-- ADD SOURCES TO JAR INSTEAD OF COPYING DEPS TO OTHER PROJECT -->
+			<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
  		</plugins>
 	</build>
 
