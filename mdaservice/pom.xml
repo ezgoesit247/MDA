@@ -7,7 +7,7 @@
 	<description></description>
 
 	<artifactId>mdaservice</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>1.1.1</version>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -17,7 +17,7 @@
 	</parent>
 
 	<properties>
-		<start-class>capgemini.aif.machinedataanalytics.MDARestService</start-class>
+		<start-class>capgemini.aif.machinedataanalytics.service.MDARestService</start-class>
 	</properties>
 
 	<dependencies>
@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>test</scope>
+			<!-- <scope>test</scope> -->
 		</dependency>
 		<dependency>
 		    <groupId>com.microsoft.sqlserver</groupId>
@@ -69,6 +69,13 @@
 	</dependencies>
 
 	<build>
+	<!-- RESOURCE FILTERING FOR PROFILES -->
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -140,6 +147,31 @@
 
  		</plugins>
 	</build>
+
+  <!-- PROFILES -->
+	<profiles>
+	    <profile>
+	        <id>QA1</id>
+	        <activation>
+	            <activeByDefault>true</activeByDefault>
+	        </activation>
+	        <properties>
+	            <spring.profiles.active>QA1</spring.profiles.active>
+	        </properties>
+	    </profile>
+	    <profile>
+	        <id>INT</id>
+	        <properties>
+	            <spring.profiles.active>INT</spring.profiles.active>
+	        </properties>
+	    </profile>
+	    <profile>
+	        <id>PRD</id>
+	        <properties>
+	            <spring.profiles.active>PRD</spring.profiles.active>
+	        </properties>
+	    </profile>
+	</profiles>
 
 	<repositories>
 		<repository>

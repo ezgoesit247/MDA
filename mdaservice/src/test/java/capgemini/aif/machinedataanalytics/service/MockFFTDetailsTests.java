@@ -9,35 +9,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.microsoft.azure.eventhubs.EventData;
-
-import capgemini.aif.machinedataanalytics.service.Metadata.VariableType;
 import capgemini.aif.machinedataanalytics.service.Reel.ReelType;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Random;
 
+@TestPropertySource(locations="classpath:application-${SERVICE_TEST_ENVIRONMENT}.properties")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -66,6 +56,7 @@ public class MockFFTDetailsTests {
 				+ result.getResponse().getContentAsString());
 	}
 
+	@SuppressWarnings("unused")
 	private void logFFTDetailsByWordOrderIdentifier(String workorderuri) throws Exception, UnsupportedEncodingException {
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/fftresult/search/findAllByWorkorder?workorderuri={workorderuri}", workorderuri)
 				.accept(MediaType.APPLICATION_JSON)).andReturn();
@@ -76,6 +67,7 @@ public class MockFFTDetailsTests {
 
 	private final Logger log = LoggerFactory.getLogger(FFTDetailsTests.class);
 	private long millis;
+	@SuppressWarnings("unused")
 	private void setMillis() {
 		this.millis = System.currentTimeMillis();
 	}
@@ -100,7 +92,7 @@ public class MockFFTDetailsTests {
 		logFFTResultAtNdx("1000026");
 	}
 	
-	@Test
+//	@Test
 	public void testfindAllByReel() throws Exception {
 		
 	}
@@ -207,10 +199,19 @@ public class MockFFTDetailsTests {
 					+ "\"ccoldfrequency\": \"\",\"ccoldamplitude\": \"\"}"))
 		.andExpect(status().is4xxClientError());
 	}
-	@Test
+//	@Test
 	public void shouldCreateRecord() throws Exception {
-		String WorkOrderUri = "workorder/2";
-		String ReelUri = "reel/2";
+		String workorderuri = "workorder/2";
+		
+//		 make a reel
+		MvcResult mvcResult = mockMvc.perform(post("/reel")
+			.content("{\"workorder\"     : \""+workorderuri+"\","
+					+ "\"reelidentifier\": \"EXT-1-reeltest"+millis+"\", "
+					+ "\"type\"          : \""+ReelType.EXTRUDER+"\"}"))
+				.andExpect(status().isCreated())
+			.andReturn();
+		
+		String reeluri = "reel/1";
 		
 		this.millis = System.currentTimeMillis();
 		formatted_timestamp = new Timestamp(millis).toString().replaceAll(" ", "T") + "+0000";
@@ -218,8 +219,8 @@ public class MockFFTDetailsTests {
 		log.debug(formatted_timestamp);
 		logWorkOrderByWorkorderidentifier("WO-"+millis);
 
-		String wo  = WorkOrderUri;
-		String rl  = ReelUri;
+		String wo  = workorderuri;
+		String rl  = reeluri;
 		String ts  = formatted_timestamp;
 		String st  = formatted_timestamp;
 		String et  = formatted_timestamp;
@@ -230,7 +231,8 @@ public class MockFFTDetailsTests {
 		Long fc    = 0l;
 		Integer ac = 0;
 		// get workorder uri
-		MvcResult mvcResult = mockMvc.perform(post("/fftresult")
+		mvcResult = null;
+		mvcResult = mockMvc.perform(post("/fftresult")
 			.content("{\"reel\"          : \""+rl+"\","
 					+ "\"workorder\"     : \""+wo+"\",\"timestamp\"     : \""+ts+"\","
 					+ "\"starttime\"     : \""+st+"\",\"endtime\"       : \""+et+"\","
@@ -247,10 +249,10 @@ public class MockFFTDetailsTests {
 				.andExpect(status().isNotFound());
 		
 		// test casca
-		mockMvc.perform(MockMvcRequestBuilders.get("/"+WorkOrderUri))
+		mockMvc.perform(MockMvcRequestBuilders.get("/"+workorderuri))
 				.andExpect(status().isOk());
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/"+ReelUri))
+		mockMvc.perform(MockMvcRequestBuilders.get("/"+reeluri))
 				.andExpect(status().isOk());
 		
 		

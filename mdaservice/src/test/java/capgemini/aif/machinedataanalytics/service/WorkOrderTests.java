@@ -8,10 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import static org.junit.Assert.*;
 
+import java.sql.Timestamp;
+import java.util.Date;
 
+@TestPropertySource(locations="classpath:application-${SERVICE_TEST_ENVIRONMENT}.properties")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class WorkOrderTests {
@@ -21,10 +25,9 @@ public class WorkOrderTests {
 	private void setMillis() {
 		this.millis = System.currentTimeMillis();
 	}
-	private String formatted_timestamp;
 	
 	@Autowired
-	WorkOrderRepository woRepo;
+	WorkOrderRepository wo_r;
 
 	@Before
 	public void before() throws Exception {
@@ -33,24 +36,57 @@ public class WorkOrderTests {
 	}
 	@After
 	public void after() throws Exception {}
+
 	
 	@Test
-	public void testInit() throws Exception {
-		WorkOrder wo2 = woRepo.findByWorkorderidentifier("UT-WO-2");
+	public void testCreate() throws Exception {
+		String identifier1 = "UT-WO-1"+millis;
+		String identifier2 = "UT-WO-2"+millis;
+		String identifier3 = "UT-WO-3"+millis;
+		String identifier4 = "UT-WO-4"+millis;
+		String identifier5 = "UT-WO-5"+millis;
+		assertNotNull(wo_r.save(
+				new WorkOrder(identifier1,new Timestamp(new Date().getTime()))));
+		assertNotNull(wo_r.save(
+				new WorkOrder(identifier2,new Timestamp(new Date().getTime()))));
+		assertNotNull(wo_r.save(
+				new WorkOrder(identifier3,new Timestamp(new Date().getTime()))));
+		assertNotNull(wo_r.save(
+				new WorkOrder(identifier4,new Timestamp(new Date().getTime()))));
+		assertNotNull(wo_r.save(
+				new WorkOrder(identifier5,new Timestamp(new Date().getTime()))));
+
+	}
+	
+	@Test
+	public void testGet() throws Exception {
+		testCreate();
+
+		String identifier1 = "UT-WO-1"+millis;
+		String identifier2 = "UT-WO-2"+millis;
+		String identifier3 = "UT-WO-3"+millis;
+		String identifier4 = "UT-WO-4"+millis;
+		String identifier5 = "UT-WO-5"+millis;
+		
+		WorkOrder wo1 = wo_r.findByWorkorderidentifier(identifier1);
+		assertNotNull("UT-WO-1 doesn't exist", wo1);
+		assertEquals("UT-WO-1 not found by work order identifier",identifier1,wo1.getWorkorderidentifier());
+		
+		WorkOrder wo2 = wo_r.findByWorkorderidentifier(identifier2);
 		assertNotNull("UT-WO-2 doesn't exist", wo2);
-		assertEquals("UT-WO-2 should be at ndx 2",2,wo2.getId().intValue());
+		assertEquals("UT-WO-2 not found by work order identifier",identifier2,wo2.getWorkorderidentifier());
 		
-		WorkOrder wo3 = woRepo.findByWorkorderidentifier("UT-WO-3");
+		WorkOrder wo3 = wo_r.findByWorkorderidentifier(identifier3);
 		assertNotNull("UT-WO-3 doesn't exist", wo3);
-		assertEquals("UT-WO-3 should be at ndx 3",3,wo3.getId().intValue());
+		assertEquals("UT-WO-3 not found by work order identifier",identifier1,wo1.getWorkorderidentifier());
 		
-		WorkOrder wo4 = woRepo.findByWorkorderidentifier("UT-WO-4");
+		WorkOrder wo4 = wo_r.findByWorkorderidentifier(identifier4);
 		assertNotNull("UT-WO-4 doesn't exist", wo4);
-		assertEquals("UT-WO-4 should be at ndx 4",4,wo4.getId().intValue());
+		assertEquals("UT-WO-4 not found by work order identifier",identifier4,wo4.getWorkorderidentifier());
 		
-		WorkOrder wo5 = woRepo.findByWorkorderidentifier("UT-WO-5");
+		WorkOrder wo5 = wo_r.findByWorkorderidentifier(identifier5);
 		assertNotNull("UT-WO-5 doesn't exist", wo5);
-		assertEquals("UT-WO-5 should be at ndx 5",5,wo5.getId().intValue());
+		assertEquals("UT-WO-5 not found by work order identifier",identifier5,wo5.getWorkorderidentifier());
 	}
 
 

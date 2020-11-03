@@ -1,6 +1,5 @@
 package capgemini.aif.machinedataanalytics.service;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -8,8 +7,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.google.gson.Gson;
@@ -17,7 +14,7 @@ import com.google.gson.GsonBuilder;
 
 @Entity
 @Table(name="telemetrymetadata")
-public class Metadata {
+public class Metadata implements MDADataObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="variablendx",columnDefinition="integer",updatable=false,nullable=false)

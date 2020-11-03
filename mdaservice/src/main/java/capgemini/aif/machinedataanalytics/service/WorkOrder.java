@@ -9,7 +9,7 @@ import com.google.gson.GsonBuilder;
 
 @Entity
 @Table(name="workorder")
-public class WorkOrder {
+public class WorkOrder implements MDADataObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="workorderndx",updatable=false,nullable=false)

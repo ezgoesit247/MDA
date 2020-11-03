@@ -10,12 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import capgemini.aif.machinedataanalytics.service.Reel.ReelType;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 
+@TestPropertySource(locations="classpath:application-${SERVICE_TEST_ENVIRONMENT}.properties")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -85,15 +88,37 @@ public class MockWorkOrderTests {
 	}
 	
 	
-//	@Test
+	@Test
 	public void testFindReelByWorkorder() throws Exception {
 		
 		MvcResult mvcResult = mockMvc.perform(get("/workorder/search/findByWorkorderidentifier?workorderidentifier={workorderidentifier}", "WO-"+millis))
 				.andExpect(status().isOk()).andReturn();
 
+		assertNotNull("mvcResult is null",mvcResult);
+		
 		String location = mvcResult.getResponse().getHeader("Location");
+		assertNotNull("response is null",mvcResult.getResponse());
+		assertNull("Location is not null", location);
+		
+		mvcResult = null;
+		location = null;
+
+		this.millis = System.currentTimeMillis();
+		formatted_timestamp = new Timestamp(millis).toString().replaceAll(" ", "T") + "+0000";
+		mvcResult = mockMvc.perform(post("/workorder").content("{\"timestamp\": \""+formatted_timestamp+"\", \"workorderidentifier\": \"WO-"+millis+"\"}"))
+				.andExpect(status().isCreated())
+			.andReturn();
+		location = mvcResult.getResponse().getHeader("Location");
+		assertNotNull("response is null",mvcResult.getResponse());
+		assertNotNull("Location is null", location);
+
+		mockMvc.perform(delete(location))
+				.andExpect(status().isNoContent());
 		mockMvc.perform(get(location))
-				.andExpect(status().isOk());
+				.andExpect(status().isNotFound());
+		
+//		mockMvc.perform(get(location))
+//				.andExpect(status().isOk());
 		
 	}
 	

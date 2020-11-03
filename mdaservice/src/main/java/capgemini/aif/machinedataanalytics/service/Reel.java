@@ -7,7 +7,7 @@ import com.google.gson.GsonBuilder;
 
 @Entity
 @Table(name="reel")
-public class Reel {
+public class Reel implements MDADataObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="reelndx",updatable=false,nullable=false)

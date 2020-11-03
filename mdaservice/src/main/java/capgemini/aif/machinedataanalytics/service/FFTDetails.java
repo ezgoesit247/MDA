@@ -9,7 +9,7 @@ import com.google.gson.GsonBuilder;
 
 @Entity
 @Table(name="fftdetails")
-public class FFTDetails {
+public class FFTDetails implements MDADataObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="fftdetailsndx",columnDefinition="numeric(19, 0)",updatable=false,nullable=false)

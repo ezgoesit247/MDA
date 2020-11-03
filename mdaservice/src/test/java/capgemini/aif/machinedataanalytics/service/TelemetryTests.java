@@ -1,6 +1,5 @@
 package capgemini.aif.machinedataanalytics.service;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,67 +7,83 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import capgemini.aif.machinedataanalytics.service.Metadata;
-import capgemini.aif.machinedataanalytics.service.MetadataRepository;
-import capgemini.aif.machinedataanalytics.service.Reel;
-import capgemini.aif.machinedataanalytics.service.ReelRepository;
-import capgemini.aif.machinedataanalytics.service.Telemetry;
-import capgemini.aif.machinedataanalytics.service.Telemetry.SendStatus;
-import capgemini.aif.machinedataanalytics.service.TelemetryRepository;
+import capgemini.aif.machinedataanalytics.service.Metadata.VariableType;
 import capgemini.aif.machinedataanalytics.service.Reel.ReelType;
+import capgemini.aif.machinedataanalytics.service.Telemetry.SendStatus;
 
 import static org.junit.Assert.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+@TestPropertySource(locations="classpath:application-${SERVICE_TEST_ENVIRONMENT}.properties")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class TelemetryTests {
+
+	private long millis;
+	private void setMillis() {
+		millis = System.currentTimeMillis();
+	}
 
 	private final Logger log = LoggerFactory.getLogger(TelemetryTests.class);
 	private	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	private LocalDateTime now = LocalDateTime.now();
 
+	@SuppressWarnings("unused")
 	@Autowired
-	private TelemetryRepository tele_r;
-	
-	@Autowired
-	private ReelRepository reel_r;
+	private FFTDetailsRepository fft_r;
 
+	@SuppressWarnings("unused")
 	@Autowired
 	private MetadataRepository metadata_r;
 	
+	@SuppressWarnings("unused")
 	@Autowired
-	WorkOrderRepository wo_r;
+	private ReelRepository reel_r;
 
+	@SuppressWarnings("unused")
+	@Autowired
+	private TelemetryRepository tele_r;
+
+	@SuppressWarnings("unused")
+	@Autowired
+	private TelemetryValueRepository tele_v_r;
+	
+	@SuppressWarnings("unused")
+	@Autowired
+	private WorkOrderRepository wo_r;
+	
 	@Before
-	public void before() throws Exception {}
-	@After
-	public void after() throws Exception {}
+	public void before() throws Exception {
+		setMillis();
+	}
 
 	@Test
 	public void test_findByReelidentifierAndTimestamp() throws Exception {
 		String reelidentifier = "UT-REEL-1";
-		Reel r = reel_r.findByReelidentifier(reelidentifier);
-		assertNotNull("Reel is null", r);
+		
+		Reel reel = new Reel(reelidentifier, ReelType.EXTRUDER, wo_r.save(
+				new WorkOrder("WO"+now.toString(), Timestamp.valueOf(now.format(formatter)))));
+		reel_r.save(reel);
 
-		Metadata  m1 = metadata_r.findByVariablename("UT-Variable1");
-		 Metadata  m2 = metadata_r.findByVariablename("UT-Variable2");
-		 Metadata  m3 = metadata_r.findByVariablename("UT-Variable3");
+		assertNotNull("Reel is null", reel);
+
+		Metadata  m1 = metadata_r.save(new Metadata("in_oven_heater_tmp","VAR1000",VariableType.DEFAULT));
+		Metadata  m2 = metadata_r.save(new Metadata("in_capstan_tension","VAR1001",VariableType.TENSION));
+		Metadata  m3 = metadata_r.save(new Metadata("in_taper1_rpm","VAR1002",VariableType.SPEED));
 		 
 		Set<TelemetryValue> variables = new HashSet<TelemetryValue>();
 		variables.add(new TelemetryValue(m1, 3.123457d));
 		variables.add(new TelemetryValue(m2, 10.33345d));
 		variables.add(new TelemetryValue(m3, 12.6645d));
-		Telemetry t = new Telemetry(variables,r,Timestamp.valueOf(now.format(formatter)),SendStatus.NOSEND);
+		Telemetry t = new Telemetry(variables,reel,Timestamp.valueOf(now.format(formatter)),SendStatus.NOSEND);
 
 		tele_r.save(t);
 
@@ -76,45 +91,74 @@ public class TelemetryTests {
 		assertNotNull("Telemetry is null", telemetry);
 		Set<TelemetryValue> vars = telemetry.getVariables();
 		assertEquals(3, vars.size());
-		
-		
+
 		tele_r.delete(t);
 	}
 	
 	@Test
 	public void testCreateNew() throws Exception {
-		String reelidentifier = "UT-REEL-1";
-		Reel reel = reel_r.findByReelidentifier(reelidentifier);
-		assertNotNull("Reel is null", reel);
-
-		Metadata  m3 = metadata_r.findByVariablename("UT-Variable3");
-		Metadata  m4 = metadata_r.findByVariablename("UT-Variable4");
-		 
-		Set<TelemetryValue> variables = new HashSet<TelemetryValue>();
-		variables.add(new TelemetryValue(m3, 60.8d));
-		variables.add(new TelemetryValue(m4, 29.096d));
-		Telemetry t = new Telemetry(variables,reel,Timestamp.valueOf(now.format(formatter)),SendStatus.NOSEND);
-		tele_r.save(t);
+		String reelidentifier1 = "ext-reel-2"+millis;
+		String workorderidentifier1 = "UT-WO-2"+millis;
+		assertNotNull(reel_r.save(new Reel(reelidentifier1, ReelType.EXTRUDER, wo_r.save(
+				new WorkOrder(workorderidentifier1, Timestamp.valueOf(now.format(formatter)))))));
 		
-		log.debug(t.toString());
-		tele_r.delete(t);
+		Reel reel = reel_r.findByReelidentifier(reelidentifier1);
+
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier4);
+
+		Set<TelemetryValue> variables = new HashSet<TelemetryValue>();
+		variables.add(new TelemetryValue(var1, 65.61d));
+		variables.add(new TelemetryValue(var2, 87.809d));
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();
+
+		Timestamp ts = Timestamp.valueOf(now.format(formatter));
+		Telemetry t = new Telemetry(variables, reel, ts, SendStatus.NOSEND);
+		assertNotNull(t);
+		tele_r.save(t);
 		
 	}
 
 	@Test
 	public void test_findByReelAndTimestamp() throws Exception {
-		String reelidentifier = "UT-REEL-1";
+		String reelidentifier = "ext-1"+millis;
+		String workorderidentifier = "WO-1"+millis;
+		assertNotNull(reel_r.save(new Reel(reelidentifier, ReelType.EXTRUDER, wo_r.save(
+				new WorkOrder(workorderidentifier, Timestamp.valueOf(now.format(formatter)))))));
+		
 		Reel reel = reel_r.findByReelidentifier(reelidentifier);
 		assertNotNull("Reel is null", reel);
 
-		Metadata  m1 = metadata_r.findByVariablename("UT-Variable1");
-		 Metadata  m3 = metadata_r.findByVariablename("UT-Variable3");
-		 Metadata  m4 = metadata_r.findByVariablename("UT-Variable4");
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		assertNotNull("var0 is null", var0);
+		assertNotNull("var1 is null", var1);
+		assertNotNull("var2 is null", var2);
 		 
 		Set<TelemetryValue> variables = new HashSet<TelemetryValue>();
-		variables.add(new TelemetryValue(m1, 3.123457d));
-		variables.add(new TelemetryValue(m3, 10.33345d));
-		variables.add(new TelemetryValue(m4, 0.33345));
+		variables.add(new TelemetryValue(var0, 3.123457d));
+		variables.add(new TelemetryValue(var1, 10.33345d));
+		variables.add(new TelemetryValue(var2, 0.33345));
 		Telemetry t = new Telemetry(variables,reel,Timestamp.valueOf(now.format(formatter)),SendStatus.NOSEND);
 		tele_r.save(t);
 
@@ -136,14 +180,29 @@ public class TelemetryTests {
 		
 		// VARIABLES SET
 		double[] ary1 = { 98.002d, 12.456d, 2335.6d, 2333.0909d };
-		Metadata var0 = metadata_r.findByVariablename("UT-Variable1");
-		Metadata var1 = metadata_r.findByVariablename("UT-Variable2");
-		Metadata var2 = metadata_r.findByVariablename("UT-Variable3");
-		Metadata var3 = metadata_r.findByVariablename("UT-Variable4");
+
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var3 = metadata_r.findByVariablename(metaidentifier4);
 		assertNotNull("var0 is null", var0);
 		assertNotNull("var1 is null", var1);
 		assertNotNull("var2 is null", var2);
 		assertNotNull("var3 is null", var3);
+		
 		Set<TelemetryValue> variables1 = new HashSet<TelemetryValue>();
 		variables1.add(new TelemetryValue(var0, ary1[0]));
 		variables1.add(new TelemetryValue(var1, ary1[1]));
@@ -189,14 +248,29 @@ public class TelemetryTests {
 		
 		// VARIABLES SET
 		double[] ary1 = { 98.002d, 12.456d, 2335.6d, 2333.0909d };
-		Metadata var0 = metadata_r.findByVariablename("UT-Variable1");
-		Metadata var1 = metadata_r.findByVariablename("UT-Variable2");
-		Metadata var2 = metadata_r.findByVariablename("UT-Variable3");
-		Metadata var3 = metadata_r.findByVariablename("UT-Variable4");
+
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var3 = metadata_r.findByVariablename(metaidentifier4);
 		assertNotNull("var0 is null", var0);
 		assertNotNull("var1 is null", var1);
 		assertNotNull("var2 is null", var2);
 		assertNotNull("var3 is null", var3);
+		
 		Set<TelemetryValue> variables1 = new HashSet<TelemetryValue>();
 		variables1.add(new TelemetryValue(var0, ary1[0]));
 		variables1.add(new TelemetryValue(var1, ary1[1]));
@@ -242,14 +316,29 @@ public class TelemetryTests {
 		
 		// VARIABLES SET
 		double[] ary1 = { 98.002d, 12.456d, 2335.6d, 2333.0909d };
-		Metadata var0 = metadata_r.findByVariablename("UT-Variable1");
-		Metadata var1 = metadata_r.findByVariablename("UT-Variable2");
-		Metadata var2 = metadata_r.findByVariablename("UT-Variable3");
-		Metadata var3 = metadata_r.findByVariablename("UT-Variable4");
+
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var3 = metadata_r.findByVariablename(metaidentifier4);
 		assertNotNull("var0 is null", var0);
 		assertNotNull("var1 is null", var1);
 		assertNotNull("var2 is null", var2);
 		assertNotNull("var3 is null", var3);
+		
 		Set<TelemetryValue> variables1 = new HashSet<TelemetryValue>();
 		variables1.add(new TelemetryValue(var0, ary1[0]));
 		variables1.add(new TelemetryValue(var1, ary1[1]));
@@ -295,14 +384,29 @@ public class TelemetryTests {
 		
 		// VARIABLES SET
 		double[] ary1 = { 98.002d, 12.456d, 2335.6d, 2333.0909d };
-		Metadata var0 = metadata_r.findByVariablename("UT-Variable1");
-		Metadata var1 = metadata_r.findByVariablename("UT-Variable2");
-		Metadata var2 = metadata_r.findByVariablename("UT-Variable3");
-		Metadata var3 = metadata_r.findByVariablename("UT-Variable4");
+
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var3 = metadata_r.findByVariablename(metaidentifier4);
 		assertNotNull("var0 is null", var0);
 		assertNotNull("var1 is null", var1);
 		assertNotNull("var2 is null", var2);
 		assertNotNull("var3 is null", var3);
+		
 		Set<TelemetryValue> variables1 = new HashSet<TelemetryValue>();
 		variables1.add(new TelemetryValue(var0, ary1[0]));
 		variables1.add(new TelemetryValue(var1, ary1[1]));
@@ -348,14 +452,29 @@ public class TelemetryTests {
 		
 		// VARIABLES SET
 		double[] ary1 = { 98.002d, 12.456d, 2335.6d, 2333.0909d };
-		Metadata var0 = metadata_r.findByVariablename("UT-Variable1");
-		Metadata var1 = metadata_r.findByVariablename("UT-Variable2");
-		Metadata var2 = metadata_r.findByVariablename("UT-Variable3");
-		Metadata var3 = metadata_r.findByVariablename("UT-Variable4");
+
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var3 = metadata_r.findByVariablename(metaidentifier4);
 		assertNotNull("var0 is null", var0);
 		assertNotNull("var1 is null", var1);
 		assertNotNull("var2 is null", var2);
 		assertNotNull("var3 is null", var3);
+		
 		Set<TelemetryValue> variables1 = new HashSet<TelemetryValue>();
 		variables1.add(new TelemetryValue(var0, ary1[0]));
 		variables1.add(new TelemetryValue(var1, ary1[1]));
@@ -393,7 +512,58 @@ public class TelemetryTests {
 	
 	@Test
 	public void test_findAllByReelidentifier() throws Exception {
-		String reelidentifier = "UT-REEL-1";
+
+		String reelidentifier = "ext-1"+millis;
+		String workorderidentifier = "WO-1"+millis;
+		assertNotNull(reel_r.save(new Reel(reelidentifier, ReelType.EXTRUDER, wo_r.save(
+				new WorkOrder(workorderidentifier, Timestamp.valueOf(now.format(formatter)))))));
+		
+		Reel reel = reel_r.findByReelidentifier(reelidentifier);
+
+
+		// VARIABLES SET
+		double[] ary1 = { 98.002d, 12.456d, 2335.6d, 2333.0909d };
+
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var3 = metadata_r.findByVariablename(metaidentifier4);
+		assertNotNull("var0 is null", var0);
+		assertNotNull("var1 is null", var1);
+		assertNotNull("var2 is null", var2);
+		assertNotNull("var3 is null", var3);
+		
+		Set<TelemetryValue> variables1 = new HashSet<TelemetryValue>();
+		variables1.add(new TelemetryValue(var0, ary1[0]));
+		variables1.add(new TelemetryValue(var1, ary1[1]));
+		variables1.add(new TelemetryValue(var2, ary1[2]));
+		variables1.add(new TelemetryValue(var3, ary1[3]));
+		Telemetry t1 = new Telemetry(variables1, reel, Timestamp.valueOf(now.plusSeconds(5l).format(formatter)), SendStatus.NOSEND);
+		tele_r.save(t1);
+		
+		double[] ary2 = { 97.002d, 11.456d, 2334.6d, 2222.0909d };
+		Set<TelemetryValue> variables2 = new HashSet<TelemetryValue>();
+		variables2.add(new TelemetryValue(var0, ary2[0]));
+		variables2.add(new TelemetryValue(var1, ary2[1]));
+		variables2.add(new TelemetryValue(var2, ary2[2]));
+		variables2.add(new TelemetryValue(var3, ary2[3]));
+		Telemetry t2 = new Telemetry(variables2, reel, Timestamp.valueOf(now.plusSeconds(10l).format(formatter)), SendStatus.NOSEND);
+		tele_r.save(t2);
+		
+		
 		Collection<Telemetry> telemetry = tele_r.findAllByReelidentifier(reelidentifier);
 		assertEquals(2, telemetry.size());
 	}
@@ -408,14 +578,29 @@ public class TelemetryTests {
 		
 		// VARIABLES SET
 		double[] ary1 = { 98.002d, 12.456d, 2335.6d, 2333.0909d };
-		Metadata var0 = metadata_r.findByVariablename("UT-Variable1");
-		Metadata var1 = metadata_r.findByVariablename("UT-Variable2");
-		Metadata var2 = metadata_r.findByVariablename("UT-Variable3");
-		Metadata var3 = metadata_r.findByVariablename("UT-Variable4");
+
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var3 = metadata_r.findByVariablename(metaidentifier4);
 		assertNotNull("var0 is null", var0);
 		assertNotNull("var1 is null", var1);
 		assertNotNull("var2 is null", var2);
 		assertNotNull("var3 is null", var3);
+		
 		Set<TelemetryValue> variables1 = new HashSet<TelemetryValue>();
 		variables1.add(new TelemetryValue(var0, ary1[0]));
 		variables1.add(new TelemetryValue(var1, ary1[1]));
@@ -474,14 +659,29 @@ public class TelemetryTests {
 		
 		// VARIABLES SET
 		double[] ary1 = { 98.002d, 12.456d, 2335.6d, 2333.0909d };
-		Metadata var0 = metadata_r.findByVariablename("UT-Variable1");
-		Metadata var1 = metadata_r.findByVariablename("UT-Variable2");
-		Metadata var2 = metadata_r.findByVariablename("UT-Variable3");
-		Metadata var3 = metadata_r.findByVariablename("UT-Variable4");
+
+		String metaidentifier1 = "METAVAR-1"+millis;
+		String metaidentifier2 = "METAVAR-2"+millis;
+		String metaidentifier3 = "METAVAR-3"+millis;
+		String metaidentifier4 = "METAVAR-4"+millis;
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier1,VariableType.DIGITAL,"in_oven_heater_tmp"+millis, "Machine1","EQUIP1")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier2,VariableType.TENSION,"pred_insertion_loss"+millis, "Machine2","EQUIP2")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier3,VariableType.REEL_CAPACITY,"oven_exit_tmp"+millis, "Machine3","EQUIP3")));
+		assertNotNull(metadata_r.save(
+				new Metadata(metaidentifier4,VariableType.DEFAULT,"taper1_outlet_tension"+millis, "Machine4","EQUIP4")));
+		
+		Metadata var0 = metadata_r.findByVariablename(metaidentifier1);
+		Metadata var1 = metadata_r.findByVariablename(metaidentifier2);
+		Metadata var2 = metadata_r.findByVariablename(metaidentifier3);
+		Metadata var3 = metadata_r.findByVariablename(metaidentifier4);
 		assertNotNull("var0 is null", var0);
 		assertNotNull("var1 is null", var1);
 		assertNotNull("var2 is null", var2);
 		assertNotNull("var3 is null", var3);
+		
 		Set<TelemetryValue> variables1 = new HashSet<TelemetryValue>();
 		variables1.add(new TelemetryValue(var0, ary1[0]));
 		variables1.add(new TelemetryValue(var1, ary1[1]));

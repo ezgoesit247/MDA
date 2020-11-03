@@ -7,7 +7,7 @@ import com.google.gson.GsonBuilder;
 
 @Entity
 @Table(name="telemetryvalue")
-public class TelemetryValue {
+public class TelemetryValue implements MDADataObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="telemetryvaluendx",columnDefinition="numeric(19, 0)",updatable=false,nullable=false)

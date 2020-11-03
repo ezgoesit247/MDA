@@ -4,14 +4,13 @@ import java.sql.Timestamp;
 import java.util.Set;
 
 import javax.persistence.*;
-import javax.validation.Valid;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 @Entity
 @Table(name="telemetryheader")
-public class Telemetry {
+public class Telemetry implements MDADataObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="telemetryndx",columnDefinition="numeric(19, 0)",updatable=false,nullable=false)
