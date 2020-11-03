@@ -7,14 +7,14 @@
 	<description></description>
 
 	<artifactId>mdaservice</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<parent>
-		<groupId>capgemini.aif.mda</groupId>
-		<artifactId>machinedataanalysis</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-	</parent>
+  <parent>
+    <groupId>capgemini.aif.mda</groupId>
+    <artifactId>machinedataanalysis</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
 
 	<properties>
 		<start-class>capgemini.aif.machinedataanalytics.service.MDARestService</start-class>
