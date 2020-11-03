@@ -1,4 +1,4 @@
-package capgemini.aif.machinedataanalytics;
+package capgemini.aif.machinedataanalytics.client;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -30,13 +30,9 @@ import com.microsoft.azure.eventhubs.EventHubClient;
 import com.microsoft.azure.eventhubs.EventHubException;
 import com.microsoft.azure.eventhubs.PartitionSender;
 
-import capgemini.aif.machinedataanalytics.service.FFTDetailsRepository;
-import capgemini.aif.machinedataanalytics.service.MetadataRepository;
-import capgemini.aif.machinedataanalytics.service.ReelRepository;
 import capgemini.aif.machinedataanalytics.service.Telemetry;
 import capgemini.aif.machinedataanalytics.service.Telemetry.SendStatus;
 import capgemini.aif.machinedataanalytics.service.TelemetryRepository;
-import capgemini.aif.machinedataanalytics.service.WorkOrderRepository;
 
 @Configuration
 @PropertySource("classpath:azure.config.properties")
