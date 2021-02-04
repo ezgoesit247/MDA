@@ -17,14 +17,14 @@
 	</parent>
 
 	<properties>
-		<start-class>capgemini.aif.machinedataanalytics.MDAClient</start-class>
+		<start-class>capgemini.aif.machinedataanalytics.client.MDAClient</start-class>
 	</properties>
 
 	<dependencies>
     <dependency>
         <groupId>capgemini.aif.mda</groupId>
         <artifactId>mdaservice</artifactId>
-        <version>1.1.3</version>
+        <version>1.1.4-SNAPSHOT</version>
     </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -99,6 +99,31 @@
 
 		</plugins>
 	</build>
+
+  <!-- PROFILES -->
+  <profiles>
+      <profile>
+          <id>QA1</id>
+          <activation>
+              <activeByDefault>true</activeByDefault>
+          </activation>
+          <properties>
+              <spring.profiles.active>QA1</spring.profiles.active>
+          </properties>
+      </profile>
+      <profile>
+          <id>INT</id>
+          <properties>
+              <spring.profiles.active>INT</spring.profiles.active>
+          </properties>
+      </profile>
+      <profile>
+          <id>PRD</id>
+          <properties>
+              <spring.profiles.active>PRD</spring.profiles.active>
+          </properties>
+      </profile>
+  </profiles>
 
 	<repositories>
 		<repository>
