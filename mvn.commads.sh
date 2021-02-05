@@ -15,9 +15,10 @@ mvn clean package -DSERVICE_TEST_ENVIRONMENT=${TEST_ENVIRONMENT} \
     echo mvn clean failed; else
     mvn package -DskipTests; fi \
 \
-&& if [ -f target/mdaservice-${MDA_SERVICE_VERSION}.jar ]; then
+&& pushd mdaservice >/dev/null && if [ -f target/mdaservice-${MDA_SERVICE_VERSION}.jar ]; then
   mvn spring-boot:run -Dspring-boot.run.profiles=${TEST_RUN_ENVIRONMENT}; else
-  echo packaging jar failed; fi
+  echo packaging jar failed; fi && popd >/dev/null || popd >/dev/null \
+&& find . -name mdaservice-${MDA_SERVICE_VERSION}.jar
 
 
 # clean, then package skip tests
@@ -29,4 +30,4 @@ mvn clean && if [ ! -d target ]; then
 # run the jar
 java -jar \
    -Dspring.profiles.active=${RUN_ENVIRONMENT} \
-   target/mdaservice-${MDA_SERVICE_VERSION}.jar
+   mdaservice/target/mdaservice-${MDA_SERVICE_VERSION}.jar
