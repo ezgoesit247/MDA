@@ -84,7 +84,7 @@ CREATE TABLE `aifmda`.`fftdetails`( # FFTDetails
 ,PRIMARY KEY (`FFTDetailsNdx`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `WorkOrder` (`WorkOrderNdx`, `WorkOrderIdentifier`, `Timestamp`) VALUES
+INSERT INTO `workorder` (`WorkOrderNdx`, `WorkOrderIdentifier`, `Timestamp`) VALUES
  (1, 'UT-WO-1','2018-01-01T11:22:33')
 ,(2, 'UT-WO-2','2018-01-01T11:22:33')
 ,(3, 'UT-WO-3','2018-01-01T23:44:55')
