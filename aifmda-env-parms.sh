@@ -6,33 +6,43 @@ export MDA_SERVICE_VERSION=1.1.4-SNAPSHOT \
   && export INT_ENVIRONMENT=INT \
   && export RUN_ENVIRONMENT=INT
 
-function do_test_integration {
+function run_test_integrations {
+  mvn test -DSERVICE_TEST_ENVIRONMENT=${TEST_INT_ENVIRONMENT}
+}
+
+function run_integrations {
+  mvn test -DSERVICE_TEST_ENVIRONMENT=${INT_ENVIRONMENT}
+}
+
 # package
 # clean, then package skip tests
 # clean & run
-mvn clean package -DSERVICE_TEST_ENVIRONMENT=${TEST_INT_ENVIRONMENT} \
-\
-&& mvn clean && if [ -d target ]; then
-    echo mvn clean failed; else
-    mvn package -DskipTests; fi \
-\
-&& pushd mdaservice >/dev/null && if [ -f target/mdaservice-${MDA_SERVICE_VERSION}.jar ]; then
-  mvn spring-boot:run -Dspring-boot.run.profiles=${TEST_RUN_ENVIRONMENT}; else
-  echo packaging jar failed; fi && popd >/dev/null || popd >/dev/null \
-&& find . -name mdaservice-${MDA_SERVICE_VERSION}.jar
+function do_test_integration {
+  mvn clean package -DSERVICE_TEST_ENVIRONMENT=${TEST_INT_ENVIRONMENT} \
+  \
+  && mvn clean && if [ -d target ]; then
+      echo mvn clean failed; else
+      mvn package -DskipTests; fi \
+  \
+  && pushd mdaservice >/dev/null && if [ -f target/mdaservice-${MDA_SERVICE_VERSION}.jar ]; then
+    mvn spring-boot:run -Dspring-boot.run.profiles=${TEST_RUN_ENVIRONMENT}; else
+    echo packaging jar failed; fi && popd >/dev/null || popd >/dev/null \
+  && find . -name mdaservice-${MDA_SERVICE_VERSION}.jar
 }
 
-function do_integration {
+
 # clean, then package skip tests
-mvn clean && if [ ! -d target ]; then
-  mvn package \
-    -DSERVICE_TEST_ENVIRONMENT=${INT_ENVIRONMENT}; else
-  echo mvn clean failed; fi
+function do_integration {
+  mvn clean && if [ ! -d target ]; then
+    mvn package \
+      -DSERVICE_TEST_ENVIRONMENT=${INT_ENVIRONMENT}; else
+    echo mvn clean failed; fi
 }
 
+
+# run the application
 function do_run {
-# run the jar
-java -jar \
-   -Dspring.profiles.active=${RUN_ENVIRONMENT} \
-   mdaservice/target/mdaservice-${MDA_SERVICE_VERSION}.jar
+  java -jar \
+     -Dspring.profiles.active=${RUN_ENVIRONMENT} \
+     mdaservice/target/mdaservice-${MDA_SERVICE_VERSION}.jar
 }

@@ -1,14 +1,25 @@
 # Make a new Reel
 echo {"reelidentifier":"<UNIQUE_NAME>","type":"<EXTRUDER | TAPER>","workorder":"workorder/<NDX>"} | curl -i -X POST -H "Content-Type:application/json" -d @- http://localhost:8080/reel
 
+NDX=0
+REEL=1000
+TYPE=EXTRUDER
+NDX=$(expr ${NDX} + 1233)
+echo {"reelidentifier":"${REEL}","type":"${TYPE}","workorder":"workorder/${NDX}"} | curl -i -X POST -H "Content-Type:application/json" -d @- http://localhost:8080/reel
 
 # Make a new WorkOrder
 echo {"workorderidentifier":"<UNIQUE_NAME>","timestamp":"<yyyy-mm-ddThh:mm:ss>"} | curl -i -X POST -H "Content-Type:application/json" -d @- http://localhost:8080/workorder
 
+WO=WO-POST-100
+TMSTMP=2021-02-07T11:28:28
+echo {"workorderidentifier":"${WO}","timestamp":"{TMSTMP}"} | curl -i -X POST -H "Content-Type:application/json" -d @- http://localhost:8080/workorder
 
 #Make a new Variable
 echo {"variablename":"<UNIQUE_NAME>","shortname":"<UNIQUE_NAME>"} | curl -i -X POST -H "Content-Type:application/json" -d @- http://localhost:8080/metadata
 
+VARIABLE=variable_number_one
+SHORT=V1
+echo {"variablename":"{VARIABLE}","SHORT":"${short}"} | curl -i -X POST -H "Content-Type:application/json" -d @- http://localhost:8080/metadata
 
 # Make a new FFT Result
 echo { "d1frequency" : 0, "d3frequency" : 0, "ccoldfrequency" : 0, "d1amplitude" : 0, "d3amplitude" : 0, "ccoldamplitude" : 0, "timestamp" : "<yyyy-mm-ddThh:mm:ss>", "starttime" : "<yyyy-mm-ddThh:mm:ss>", "endtime" : "<yyyy-mm-ddThh:mm:ss>" }  | curl -i -X POST -H "Content-Type:application/json" -d @-  http://localhost:8080/fftresult
