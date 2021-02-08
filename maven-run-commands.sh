@@ -1,10 +1,10 @@
 #mdaservice
 
-MDA_SERVICE_VERSION=1.1.4-SNAPSHOT \
-  && TEST_INT_ENVIRONMENT=DV1 \
-  && TEST_RUN_ENVIRONMENT=QA1 \
-  && INT_ENVIRONMENT=INT \
-  && RUN_ENVIRONMENT=INT
+export MDA_SERVICE_VERSION=1.1.4-SNAPSHOT \
+  && export TEST_INT_ENVIRONMENT=DV1 \
+  && export TEST_RUN_ENVIRONMENT=QA1 \
+  && export INT_ENVIRONMENT=INT \
+  && export RUN_ENVIRONMENT=INT
 
 function do_test_integration {
 # package
