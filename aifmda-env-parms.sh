@@ -1,15 +1,19 @@
 #mdaservice
 
+functionlist=()
+
 export MDA_SERVICE_VERSION=1.1.4-SNAPSHOT \
   && export TEST_INT_ENVIRONMENT=DV1 \
   && export TEST_RUN_ENVIRONMENT=QA1 \
   && export INT_ENVIRONMENT=INT \
   && export RUN_ENVIRONMENT=INT
 
+functionlist+=(run_test_integrations)
 function run_test_integrations {
   mvn test -DSERVICE_TEST_ENVIRONMENT=${TEST_INT_ENVIRONMENT}
 }
 
+functionlist+=(run_integrations)
 function run_integrations {
   mvn test -DSERVICE_TEST_ENVIRONMENT=${INT_ENVIRONMENT}
 }
@@ -17,6 +21,7 @@ function run_integrations {
 # package
 # clean, then package skip tests
 # clean & run
+functionlist+=(do_test_integration)
 function do_test_integration {
   mvn clean package -DSERVICE_TEST_ENVIRONMENT=${TEST_INT_ENVIRONMENT} \
   \
@@ -32,6 +37,7 @@ function do_test_integration {
 
 
 # clean, then package skip tests
+functionlist+=(do_integration)
 function do_integration {
   mvn clean && if [ ! -d target ]; then
     mvn package \
@@ -41,8 +47,12 @@ function do_integration {
 
 
 # run the application
+functionlist+=(do_run)
 function do_run {
   java -jar \
      -Dspring.profiles.active=${RUN_ENVIRONMENT} \
      mdaservice/target/mdaservice-${MDA_SERVICE_VERSION}.jar
 }
+
+echo aifmda functions:
+for i in ${functionlist[@]}; do echo ${i}; done
