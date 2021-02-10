@@ -18,6 +18,15 @@ function run_integrations {
   mvn test -DSERVICE_TEST_ENVIRONMENT=${INT_ENVIRONMENT}
 }
 
+functionlist+=(build_integration)
+function build_integration {
+  mvn clean && if [ ! -d target ]; then
+    mvn package -DskipTests \
+      -DSERVICE_TEST_ENVIRONMENT=${INT_ENVIRONMENT}; else
+    echo mvn clean failed && exit 1; fi
+  ls mdaservice/target/mdaservice-${MDA_SERVICE_VERSION}.jar
+}
+
 # package
 # clean, then package skip tests
 # clean & run
