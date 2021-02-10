@@ -27,6 +27,13 @@ function build_integration {
   ls mdaservice/target/mdaservice-${MDA_SERVICE_VERSION}.jar
 }
 
+functionlist+=(run_app)
+function run_app {
+  java -jar \
+     -Dspring.profiles.active=${RUN_ENVIRONMENT} \
+     ./mdaservice-${MDA_SERVICE_VERSION}.jar
+}
+
 # package
 # clean, then package skip tests
 # clean & run
