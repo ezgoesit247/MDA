@@ -1,30 +1,32 @@
-curl http://localhost:8080/reel
-curl http://localhost:8080/reel/search
-curl http://localhost:8080/reel/<REEL_NDX>
-curl http://localhost:8080/reel/search/findByReelidentifier?reelidentifier=<REEL_IDENTIFIER>
-curl http://localhost:8080/reel/search/findByWorkorder?workorder=<URI>
-curl http://localhost:8080/reel/search/findAllByType?type=<TYPE>
+export HOSTNAME=host.docker.internal
 
-curl http://localhost:8080/workorder
-curl http://localhost:8080/workorder/search
-curl http://localhost:8080/workorder/<WORKORDER_NDX>
-curl http://localhost:8080/workorder/search/findByWorkorderidentifier?workorderidentifier=<WORKORDER_IDENTIFIER>
+curl http://${HOSTNAME}:8080/reel
+curl http://${HOSTNAME}:8080/reel/search
+curl http://${HOSTNAME}:8080/reel/<REEL_NDX>
+curl http://${HOSTNAME}:8080/reel/search/findByReelidentifier?reelidentifier=<REEL_IDENTIFIER>
+curl http://${HOSTNAME}:8080/reel/search/findByWorkorder?workorder=<URI>
+curl http://${HOSTNAME}:8080/reel/search/findAllByType?type=<TYPE>
 
-curl http://localhost:8080/metadata
-curl http://localhost:8080/metadata/search
-curl http://localhost:8080/metadata/<VARIABLE_NDX>
-curl http://localhost:8080/metadata/search/findByVariablename?variablename=<VARIABLE_NAME>
-curl http://localhost:8080/metadata/search/findByShortname?shortname=<SHORT_NAME>
-curl http://localhost:8080/metadata/search/findAllByType?type=<VARIABLE_TYPE>
+curl http://${HOSTNAME}:8080/workorder
+curl http://${HOSTNAME}:8080/workorder/search
+curl http://${HOSTNAME}:8080/workorder/<WORKORDER_NDX>
+curl http://${HOSTNAME}:8080/workorder/search/findByWorkorderidentifier?workorderidentifier=<WORKORDER_IDENTIFIER>
 
-curl http://localhost:8080/fftresult
-curl http://localhost:8080/fftresult/search
-curl http://localhost:8080/fftresult/<FFT_DETAILS_NDX>
-curl http://localhost:8080/fftresult/search/findAllByWorkorder?workorder=<URI>
-curl http://localhost:8080/fftresult/search/findAllByReel?reel=<URI>
+curl http://${HOSTNAME}:8080/metadata
+curl http://${HOSTNAME}:8080/metadata/search
+curl http://${HOSTNAME}:8080/metadata/<VARIABLE_NDX>
+curl http://${HOSTNAME}:8080/metadata/search/findByVariablename?variablename=<VARIABLE_NAME>
+curl http://${HOSTNAME}:8080/metadata/search/findByShortname?shortname=<SHORT_NAME>
+curl http://${HOSTNAME}:8080/metadata/search/findAllByType?type=<VARIABLE_TYPE>
 
-curl http://localhost:8080/telemetry
-curl http://localhost:8080/telemetry/search
-curl http://localhost:8080/telemetry/<>
-curl http://localhost:8080/telemetry/search/findAllByReel?reel=<URI>
-curl http://localhost:8080/telemetry/search/findAllByReelidentifier/?reelidentifier=<REEL_IDENTIFIER>
+curl http://${HOSTNAME}:8080/fftresult
+curl http://${HOSTNAME}:8080/fftresult/search
+curl http://${HOSTNAME}:8080/fftresult/<FFT_DETAILS_NDX>
+curl http://${HOSTNAME}:8080/fftresult/search/findAllByWorkorder?workorder=<URI>
+curl http://${HOSTNAME}:8080/fftresult/search/findAllByReel?reel=<URI>
+
+curl http://${HOSTNAME}:8080/telemetry
+curl http://${HOSTNAME}:8080/telemetry/search
+curl http://${HOSTNAME}:8080/telemetry/<>
+curl http://${HOSTNAME}:8080/telemetry/search/findAllByReel?reel=<URI>
+curl http://${HOSTNAME}:8080/telemetry/search/findAllByReelidentifier/?reelidentifier=<REEL_IDENTIFIER>
