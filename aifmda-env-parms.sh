@@ -8,6 +8,14 @@ export MDA_SERVICE_VERSION=1.1.4-SNAPSHOT \
   && export INT_ENVIRONMENT=INT \
   && export RUN_ENVIRONMENT=INT
 
+function init_INT_db {
+  PSWD='P@ssw0rd!'
+  mysql -A -uaifmda_admin -p`sed 's/!/\\!/g' <<<$(echo $PSWD)` -h 127.0.0.1 aifmda < mdaservice/src/test/resources/aifmda-init-INT.sql
+
+  #mysql -A -uaifmda_admin -p$(echo P@ssw0rd\!) -h 127.0.0.1 aifmda < mdaservice/src/test/resources/aifmda-init-INT.sql
+
+}
+
 functionlist+=(run_test_integrations)
 function run_test_integrations {
   mvn test -DSERVICE_TEST_ENVIRONMENT=${TEST_INT_ENVIRONMENT}
@@ -15,6 +23,7 @@ function run_test_integrations {
 
 functionlist+=(run_integrations)
 function run_integrations {
+  init_INT_db
   mvn test -DSERVICE_TEST_ENVIRONMENT=${INT_ENVIRONMENT}
 }
 
@@ -55,6 +64,7 @@ function do_test_integration {
 # clean, then package skip tests
 functionlist+=(do_integration)
 function do_integration {
+  init_INT_db
   mvn clean && if [ ! -d target ]; then
     mvn package \
       -DSERVICE_TEST_ENVIRONMENT=${INT_ENVIRONMENT}; else
