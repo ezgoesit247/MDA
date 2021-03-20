@@ -10,9 +10,9 @@ export MDA_SERVICE_VERSION=1.1.4-SNAPSHOT \
 
 function init_INT_db {
   PSWD='P@ssw0rd!'
-  mysql -A -uaifmda_admin -p`sed 's/!/\\!/g' <<<$(echo $PSWD)` -h 127.0.0.1 aifmda < mdaservice/src/test/resources/aifmda-init-INT.sql
+  mysql -A -uaifmda_admin -p`sed 's/!/\\!/g' <<<$(echo $PSWD)` -h host.docker.internal aifmda < mdaservice/src/test/resources/aifmda-init-INT.sql
 
-  #mysql -A -uaifmda_admin -p$(echo P@ssw0rd\!) -h 127.0.0.1 aifmda < mdaservice/src/test/resources/aifmda-init-INT.sql
+  #mysql -A -uaifmda_admin -p$(echo P@ssw0rd\!) -h host.docker.internal aifmda < mdaservice/src/test/resources/aifmda-init-INT.sql
 
 }
 
